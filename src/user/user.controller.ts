@@ -6,18 +6,22 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ICreate, IError } from './models';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Post('/create')
+  async create(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<ICreate | IError> {
+    return await this.userService.create(createUserDto);
   }
 
   @Get()
@@ -25,9 +29,9 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('/findByEmail')
+  findOne(@Query('email') email: string) {
+    return this.userService.findOneByEmail(email);
   }
 
   @Patch(':id')

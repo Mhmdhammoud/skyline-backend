@@ -6,6 +6,7 @@ import { ProjectModule } from './project/project.module';
 import Keys from './config/keys';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     CacheModule.register({
@@ -14,6 +15,7 @@ import { UserModule } from './user/user.module';
     ProjectModule,
     MongooseModule.forRoot(Keys.MONGO_URI),
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

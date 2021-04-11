@@ -10,6 +10,7 @@ export interface IError {
   status: 'Failure';
   message: string;
   error?: string;
+  user: null;
   requestTime: string;
 }
 export interface IFindAll {
