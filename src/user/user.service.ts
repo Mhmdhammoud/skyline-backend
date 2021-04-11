@@ -15,7 +15,7 @@ import {
   IFindOne,
   IUpdate,
 } from './models';
-import keys from 'src/config/keys';
+// import keys from 'src/config/keys';
 
 @Injectable()
 export class UserService {
@@ -52,23 +52,20 @@ export class UserService {
       const HASHED_PASSWORD = await bcrypt.hash(user.password, 10);
 
       const dir = `Skyline/users/${user.email}`;
-      console.log(file);
-
       const params = {
-        Bucket: keys.BUCKET_NAME,
+        Bucket: process.env.BUCKET_NAME,
         Key: `${dir}/${file.originalname}`,
         Body: file.buffer,
         ContentType: file.mimetype,
         ContentEncoding: file.encoding,
       };
       const s3 = new S3({
-        accessKeyId: keys.AWS_ACESS_KEY_ID,
-        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       });
 
       s3.upload(params, async (err, data) => {
         if (err) {
-          console.log('error in upload user image file' + err);
         } else {
           const FORMATTED_USER = {
             ...user,

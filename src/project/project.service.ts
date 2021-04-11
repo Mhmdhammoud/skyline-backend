@@ -15,7 +15,7 @@ import {
   IRemove,
 } from './models';
 import { S3 } from 'aws-sdk';
-import keys from 'src/config/keys';
+// import keys from 'src/config/keys';
 import { emptyS3Directory } from './project.helper';
 @Injectable()
 export class ProjectService {
@@ -40,8 +40,8 @@ export class ProjectService {
         return errorResponse;
       }
       const s3 = new S3({
-        accessKeyId: keys.AWS_ACESS_KEY_ID,
-        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       });
       const FORMATTED_TITLE = project.title
         .split(' ')
@@ -57,7 +57,7 @@ export class ProjectService {
 
       files.map((el, index) => {
         const params = {
-          Bucket: keys.BUCKET_NAME,
+          Bucket: process.env.BUCKET_NAME,
           Key: `${dir}/${el.originalname}`,
           Body: el.buffer,
           ContentType: el.mimetype,
@@ -66,7 +66,6 @@ export class ProjectService {
 
         s3.upload(params, async (err, data) => {
           if (err) {
-            console.log('error in upload project image file' + err);
           } else {
             FORMATTED_PROJECT = {
               ...project,
@@ -124,14 +123,14 @@ export class ProjectService {
         throw new HttpException(errorResponse, HttpStatus.NOT_FOUND);
       }
       const s3 = new S3({
-        accessKeyId: keys.AWS_ACESS_KEY_ID,
-        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       });
       const dir = `Skyline/project/${PROJECT.title}`;
 
       files.map((el, index) => {
         const params = {
-          Bucket: keys.BUCKET_NAME,
+          Bucket: process.env.BUCKET_NAME,
           Key: `${dir}/${el.originalname}`,
           Body: el.buffer,
           ContentType: el.mimetype,
@@ -140,7 +139,6 @@ export class ProjectService {
 
         s3.upload(params, async (err, data) => {
           if (err) {
-            console.log('error in upload project image file' + err);
           } else {
             await this.projectModel.findByIdAndUpdate(id, {
               $push: {
@@ -315,8 +313,8 @@ export class ProjectService {
         },
       });
       const s3 = new S3({
-        accessKeyId: keys.AWS_ACESS_KEY_ID,
-        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       });
       emptyS3Directory(s3, IMAGE_TO_DELETE.src);
       const UPDATED_PROJECT = await this.projectModel.findById(id);
