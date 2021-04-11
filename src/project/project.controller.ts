@@ -6,6 +6,7 @@ import {
   Patch,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -18,12 +19,14 @@ import {
   IFindOne,
   IUpdate,
 } from './models';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post('/create-new-project')
+  @UseGuards(AuthGuard('jwt'))
   async create(@Body() project: CreateProjectDto): Promise<ICreate | IError> {
     return await this.projectService.create(project);
   }
@@ -34,6 +37,7 @@ export class ProjectController {
   }
 
   @Get('/getByID')
+  @UseGuards(AuthGuard('jwt'))
   async findOneByID(@Query('id') id: string): Promise<IFindOne | IError> {
     return this.projectService.findByID(id);
   }
@@ -44,6 +48,7 @@ export class ProjectController {
     return this.projectService.findByTitle(title);
   }
   @Patch('/updateByID')
+  @UseGuards(AuthGuard('jwt'))
   async update(
     @Query('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
@@ -51,6 +56,7 @@ export class ProjectController {
     return this.projectService.update(id, updateProjectDto);
   }
   @Delete('/deleteByID')
+  @UseGuards(AuthGuard('jwt'))
   async remove(@Query('id') id: string): Promise<IDelete | IError> {
     return this.projectService.remove(id);
   }

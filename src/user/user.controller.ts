@@ -4,29 +4,35 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   Query,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreate, IError } from './models';
+import { ICreate, IError, IFindAll, IUpdate, IDelete } from './models';
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/create')
+  @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createUserDto: CreateUserDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ICreate | IError> {
-    return await this.userService.create(createUserDto);
+    return await this.userService.create(createUserDto, file);
   }
-
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('/getAll')
+  @UseGuards(AuthGuard('jwt'))
+  async findAll(): Promise<IFindAll | IError> {
+    return await this.userService.findAll();
   }
 
   @Get('/findByEmail')
@@ -34,13 +40,18 @@ export class UserController {
     return this.userService.findOneByEmail(email);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Patch('/updateByID')
+  @UseGuards(AuthGuard('jwt'))
+  async update(
+    @Query('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<IUpdate | IError> {
+    return await this.userService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Delete('/deleteByID')
+  @UseGuards(AuthGuard('jwt'))
+  async remove(@Query('id') id: string): Promise<IDelete | IError> {
+    return await this.userService.remove(id);
   }
 }

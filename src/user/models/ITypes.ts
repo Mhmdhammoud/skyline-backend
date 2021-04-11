@@ -10,13 +10,13 @@ export interface IError {
   status: 'Failure';
   message: string;
   error?: string;
-  user: null;
+  user?: null;
   requestTime: string;
 }
 export interface IFindAll {
   status: 'Success';
   message: string;
-  user: User[];
+  users: User[];
   length: number;
   requestTime: string;
 }
@@ -36,6 +36,6 @@ export interface IUpdate {
 export interface IDelete {
   status: 'Success';
   message: 'User was deleted successfully';
-  user: User;
+  user: null;
   requestTime: string;
 }
