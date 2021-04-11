@@ -13,7 +13,14 @@ import { AuthModule } from './auth/auth.module';
       ttl: 60, // seconds
     }),
     ProjectModule,
-    MongooseModule.forRoot(Keys.MONGO_URI),
+    MongooseModule.forRoot(Keys.MONGO_URI, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      connectTimeoutMS: 0,
+      socketTimeoutMS: 0,
+    }),
     UserModule,
     AuthModule,
   ],

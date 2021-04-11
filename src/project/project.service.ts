@@ -12,10 +12,11 @@ import {
   IFindOne,
   IUpdate,
   IAdd,
+  IRemove,
 } from './models';
 import { S3 } from 'aws-sdk';
 import keys from 'src/config/keys';
-
+import { emptyS3Directory } from './project.helper';
 @Injectable()
 export class ProjectService {
   constructor(
@@ -294,7 +295,48 @@ export class ProjectService {
       return errorResponse;
     }
   }
-
+  async removeImage(id: string, imageID: string): Promise<IRemove | IError> {
+    try {
+      const PROJECT = await this.projectModel.findById(id);
+      if (!PROJECT) {
+        const errorResponse: IError = {
+          status: 'Failure',
+          message: 'Project was not found',
+          requestTime: new Date().toISOString(),
+        };
+        throw new HttpException(errorResponse, HttpStatus.NOT_FOUND);
+      }
+      const { images: ALL_IMAGES } = PROJECT;
+      const FILTERED_IMAGES = ALL_IMAGES.filter((el) => el._id != imageID);
+      const IMAGE_TO_DELETE = ALL_IMAGES.find((el) => el._id == imageID);
+      await this.projectModel.findByIdAndUpdate(id, {
+        $set: {
+          images: FILTERED_IMAGES,
+        },
+      });
+      const s3 = new S3({
+        accessKeyId: keys.AWS_ACESS_KEY_ID,
+        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+      });
+      emptyS3Directory(s3, IMAGE_TO_DELETE.src);
+      const UPDATED_PROJECT = await this.projectModel.findById(id);
+      const response: IRemove = {
+        status: 'Success',
+        message: 'Image was removed from project successfully',
+        project: UPDATED_PROJECT,
+        requestTime: new Date().toISOString(),
+      };
+      return response;
+    } catch (error) {
+      const errorResponse: IError = {
+        status: 'Failure',
+        message: 'Internal Server Error',
+        error: error.message,
+        requestTime: new Date().toISOString(),
+      };
+      return errorResponse;
+    }
+  }
   async remove(id: string): Promise<IDelete | IError> {
     try {
       const PROJECT = await this.projectModel.findById(id);

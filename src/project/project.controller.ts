@@ -20,6 +20,7 @@ import {
   IError,
   IFindAll,
   IFindOne,
+  IRemove,
   IUpdate,
 } from './models';
 import { AuthGuard } from '@nestjs/passport';
@@ -72,6 +73,16 @@ export class ProjectController {
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<IAdd | IError> {
     return this.projectService.addImages(id, files);
+  }
+
+  @Patch('/removeImage')
+  @UseGuards(AuthGuard('jwt'))
+  async removeImage(
+    @Query('id') id: string,
+    @Query('imageID')
+    imageID: string,
+  ): Promise<IRemove | IError> {
+    return this.projectService.removeImage(id, imageID);
   }
 
   @Delete('/deleteByID')

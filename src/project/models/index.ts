@@ -6,5 +6,6 @@ export {
   IFindOne,
   IUpdate,
   IAdd,
+  IRemove,
 } from './ITypes';
 export { Project } from './Project';
