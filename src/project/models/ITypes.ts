@@ -43,3 +43,9 @@ export interface IAdd {
   project: Project;
   requestTime: string;
 }
+export interface IRemove {
+  status: 'Success';
+  message: 'Image was removed from project successfully';
+  project: Project;
+  requestTime: string;
+}

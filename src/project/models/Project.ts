@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 interface Image {
+  _id?: string;
   src: string;
 }
 export interface Project extends Document {
