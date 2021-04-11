@@ -26,7 +26,15 @@ export class ProjectService {
 
   async create(project: CreateProjectDto): Promise<ICreate | IError> {
     try {
-      const NEW_PROJECT = new this.projectModel(project);
+      const FORMATTED_TITLE = project.title
+        .split(' ')
+        .map((val) => val.charAt(0).toUpperCase() + val.slice(1))
+        .join(' ');
+      const FORMATTED_PROJECT = {
+        ...project,
+        title: FORMATTED_TITLE,
+      };
+      const NEW_PROJECT = new this.projectModel(FORMATTED_PROJECT);
       const response: ICreate = {
         status: 'Success',
         message: 'Project was created successfully',
