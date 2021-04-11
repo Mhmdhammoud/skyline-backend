@@ -37,3 +37,9 @@ export interface IDelete {
   project: Project;
   requestTime: string;
 }
+export interface IAdd {
+  status: 'Success';
+  message: 'Image were added to project successfully';
+  project: Project;
+  requestTime: string;
+}

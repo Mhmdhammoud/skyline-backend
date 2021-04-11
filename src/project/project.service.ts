@@ -11,7 +11,10 @@ import {
   IFindAll,
   IFindOne,
   IUpdate,
+  IAdd,
 } from './models';
+import { S3 } from 'aws-sdk';
+import keys from 'src/config/keys';
 
 @Injectable()
 export class ProjectService {
@@ -19,25 +22,145 @@ export class ProjectService {
     @InjectModel('Project') private readonly projectModel: Model<Project>,
   ) {}
 
-  async create(project: CreateProjectDto): Promise<ICreate | IError> {
+  async create(
+    project: CreateProjectDto,
+    files: Express.Multer.File[],
+  ): Promise<ICreate | IError> {
     try {
+      const checked = await this.projectModel.findOne({
+        title: `${project.title}`,
+      });
+      if (checked) {
+        const errorResponse: IError = {
+          status: 'Failure',
+          message: 'Project title is already in use',
+          requestTime: new Date().toISOString(),
+        };
+        return errorResponse;
+      }
+      const s3 = new S3({
+        accessKeyId: keys.AWS_ACESS_KEY_ID,
+        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+      });
       const FORMATTED_TITLE = project.title
         .split(' ')
         .map((val) => val.charAt(0).toUpperCase() + val.slice(1))
         .join(' ');
-      const FORMATTED_PROJECT = {
+      let FORMATTED_PROJECT = {
         ...project,
         title: FORMATTED_TITLE,
+        images: [],
       };
-      const NEW_PROJECT = new this.projectModel(FORMATTED_PROJECT);
-      const response: ICreate = {
-        status: 'Success',
-        message: 'Project was created successfully',
-        project: NEW_PROJECT,
+
+      const dir = `Skyline/project/${FORMATTED_TITLE}`;
+
+      files.map((el, index) => {
+        const params = {
+          Bucket: keys.BUCKET_NAME,
+          Key: `${dir}/${el.originalname}`,
+          Body: el.buffer,
+          ContentType: el.mimetype,
+          ContentEncoding: el.encoding,
+        };
+
+        s3.upload(params, async (err, data) => {
+          if (err) {
+            console.log('error in upload project image file' + err);
+          } else {
+            FORMATTED_PROJECT = {
+              ...project,
+              title: FORMATTED_TITLE,
+              images: [
+                ...FORMATTED_PROJECT.images,
+                { src: `${dir}/${el.originalname}` },
+              ],
+            };
+            if (index === files.length - 1) {
+              const NEW_PROJECT = new this.projectModel(FORMATTED_PROJECT);
+              await NEW_PROJECT.save();
+              const response: ICreate = {
+                status: 'Success',
+                message: 'Project was created successfully',
+                project: NEW_PROJECT,
+                requestTime: new Date().toISOString(),
+              };
+              return response;
+            }
+          }
+        });
+      });
+    } catch (error) {
+      const errorResponse: IError = {
+        status: 'Failure',
+        message: 'Internal Server Error',
+        error: error.message,
         requestTime: new Date().toISOString(),
       };
-      await NEW_PROJECT.save();
-      return response;
+      return errorResponse;
+    }
+  }
+
+  async addImages(
+    id: string,
+    files: Express.Multer.File[],
+  ): Promise<IAdd | IError> {
+    try {
+      if (!id) {
+        const errorResponse: IError = {
+          status: 'Failure',
+          message: 'Project id was not found',
+          requestTime: new Date().toISOString(),
+        };
+        throw new HttpException(errorResponse, HttpStatus.BAD_REQUEST);
+      }
+      const PROJECT = await this.projectModel.findById(id);
+      if (!PROJECT) {
+        const errorResponse: IError = {
+          status: 'Failure',
+          message: 'Project was not found',
+          requestTime: new Date().toISOString(),
+        };
+        throw new HttpException(errorResponse, HttpStatus.NOT_FOUND);
+      }
+      const s3 = new S3({
+        accessKeyId: keys.AWS_ACESS_KEY_ID,
+        secretAccessKey: keys.AWS_SECRET_ACCESS_KEY,
+      });
+      const dir = `Skyline/project/${PROJECT.title}`;
+
+      files.map((el, index) => {
+        const params = {
+          Bucket: keys.BUCKET_NAME,
+          Key: `${dir}/${el.originalname}`,
+          Body: el.buffer,
+          ContentType: el.mimetype,
+          ContentEncoding: el.encoding,
+        };
+
+        s3.upload(params, async (err, data) => {
+          if (err) {
+            console.log('error in upload project image file' + err);
+          } else {
+            await this.projectModel.findByIdAndUpdate(id, {
+              $push: {
+                images: {
+                  src: `${dir}/${el.originalname}`,
+                },
+              },
+            });
+            if (index === files.length - 1) {
+              const UPDATED_PROJECT = await this.projectModel.findById(id);
+              const response: IAdd = {
+                status: 'Success',
+                message: 'Image were added to project successfully',
+                project: UPDATED_PROJECT,
+                requestTime: new Date().toISOString(),
+              };
+              return response;
+            }
+          }
+        });
+      });
     } catch (error) {
       const errorResponse: IError = {
         status: 'Failure',

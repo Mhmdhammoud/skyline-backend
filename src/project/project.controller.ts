@@ -7,11 +7,14 @@ import {
   Delete,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import {
+  IAdd,
   ICreate,
   IDelete,
   IError,
@@ -20,6 +23,7 @@ import {
   IUpdate,
 } from './models';
 import { AuthGuard } from '@nestjs/passport';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('project')
 export class ProjectController {
@@ -27,8 +31,12 @@ export class ProjectController {
 
   @Post('/create-new-project')
   @UseGuards(AuthGuard('jwt'))
-  async create(@Body() project: CreateProjectDto): Promise<ICreate | IError> {
-    return await this.projectService.create(project);
+  @UseInterceptors(FilesInterceptor('images'))
+  async create(
+    @Body() project: CreateProjectDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<ICreate | IError> {
+    return await this.projectService.create(project, files);
   }
 
   @Get('/getAll')
@@ -55,6 +63,17 @@ export class ProjectController {
   ): Promise<IUpdate | IError> {
     return this.projectService.update(id, updateProjectDto);
   }
+
+  @Patch('/addImages')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('images'))
+  async addImage(
+    @Query('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<IAdd | IError> {
+    return this.projectService.addImages(id, files);
+  }
+
   @Delete('/deleteByID')
   @UseGuards(AuthGuard('jwt'))
   async remove(@Query('id') id: string): Promise<IDelete | IError> {
