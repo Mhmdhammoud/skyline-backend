@@ -1,34 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ProjectService } from './project.service';
-import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { CreateProjectDto } from './dto/create-project.dto';
+import {
+  ICreate,
+  IDelete,
+  IError,
+  IFindAll,
+  IFindOne,
+  IUpdate,
+} from './models';
 
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @Post()
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectService.create(createProjectDto);
+  @Post('/create-new-project')
+  async create(@Body() project: CreateProjectDto): Promise<ICreate | IError> {
+    return await this.projectService.create(project);
   }
 
-  @Get()
-  findAll() {
-    return this.projectService.findAll();
+  @Get('/getAll')
+  async findAll(): Promise<IFindAll | IError> {
+    return await this.projectService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  @Get('/getByID')
+  async findOneByID(@Query('id') id: string): Promise<IFindOne | IError> {
+    return this.projectService.findByID(id);
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
-    return this.projectService.update(+id, updateProjectDto);
+  @Get('/getByTitle')
+  async findOneByTitle(
+    @Query('title') title: string,
+  ): Promise<IFindOne | IError> {
+    return this.projectService.findByTitle(title);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectService.remove(+id);
+  @Patch('/updateByID')
+  async update(
+    @Query('id') id: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+  ): Promise<IUpdate | IError> {
+    return this.projectService.update(id, updateProjectDto);
+  }
+  @Delete('/deleteByID')
+  async remove(@Query('id') id: string): Promise<IDelete | IError> {
+    return this.projectService.remove(id);
   }
 }
