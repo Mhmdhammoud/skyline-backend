@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^7.6.15",
+    "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.6.15",
     "@nestjs/jwt": "^7.2.0",
     "@nestjs/mapped-types": "*",
@@ -31,6 +32,7 @@
     "aws-sdk": "^2.884.0",
     "bcrypt": "^5.0.1",
     "cache-manager": "^3.4.3",
+    "dotenv": "^8.2.0",
     "mongoose": "^5.12.3",
     "morgan": "^1.10.0",
     "passport": "^0.4.1",

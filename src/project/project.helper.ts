@@ -6,10 +6,10 @@
  * @returns void
  *
  */
-import Keys from '../config/keys';
+// import Keys from '../config/keys';
 export const emptyS3Directory = async (s3, dir) => {
   const listParams = {
-    Bucket: Keys.BUCKET_NAME,
+    Bucket: process.env.BUCKET_NAME,
     Prefix: dir,
   };
 
@@ -18,7 +18,7 @@ export const emptyS3Directory = async (s3, dir) => {
   if (listedObjects.Contents.length === 0) return;
 
   const deleteParams = {
-    Bucket: Keys.BUCKET_NAME,
+    Bucket: process.env.BUCKET_NAME,
     Delete: { Objects: [] },
   };
 
