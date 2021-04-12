@@ -10,11 +10,6 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: './config.env',
-      isGlobal: true,
-      ignoreEnvFile: false,
-    }),
     CacheModule.register({
       ttl: 60, // seconds
     }),
