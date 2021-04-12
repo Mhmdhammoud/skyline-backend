@@ -1,3 +1,3 @@
-dev: npm run start:dev
+web: npm run start:dev
 build: npm build
-start: npm start
+test: npm  test
