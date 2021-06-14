@@ -14,7 +14,7 @@ export interface IError {
 export interface IFindAll {
   status: 'Success';
   message: string;
-  project: Project[];
+  projects: Project[];
   length: number;
   requestTime: string;
 }

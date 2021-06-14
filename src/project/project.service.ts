@@ -187,7 +187,7 @@ export class ProjectService {
       const response: IFindAll = {
         status: 'Success',
         message: 'All Projects were fetched successfully',
-        project: PROJECTS,
+        projects: PROJECTS,
         length: PROJECTS.length,
         requestTime: new Date().toISOString(),
       };
